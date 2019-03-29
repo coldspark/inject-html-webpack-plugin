@@ -1,6 +1,5 @@
 const fs = require('fs-extra')
 const filter = require('lodash/filter')
-const includes = require('lodash/includes')
 const isString = require('lodash/isString')
 const isFunction = require('lodash/isFunction')
 const { extname } = require('path')
@@ -24,13 +23,28 @@ function assetsOfChunks(chunks, selected) {
     js: [],
     css: []
   }
-  filter(chunks, chunk => includes(selected, chunk.name)).forEach(chunk => {
+  filter(chunks, chunk => isChunkToBeIncluded(chunk.name, selected)).forEach(chunk => {
     chunk.files.forEach(file => {
       let ext = extname(file).replace('.', '')
       assets[ext] && assets[ext].push(file)
     })
   })
   return assets
+}
+
+function isChunkToBeIncluded(chunkName, chunkSelectionArray) {
+  let isChunkFound = chunkSelectionArray.indexOf(chunkName) > -1;
+  if (isChunkFound)
+    return true;
+
+  const isChunkGroup = chunkName.indexOf("~") > -1;
+  if (isChunkGroup) {
+    const chunkNames = chunkName.split("~");
+    const isIntersecting = chunkNames.filter(n => chunkSelectionArray.indexOf(n) > -1).length > 0;
+    return isIntersecting;
+  }
+
+  return false;
 }
 
 function injectWithinByIndentifier(
