@@ -34,7 +34,7 @@ module.exports = {
     },
     plugins:[
         new InjectHtmlPlugin({
-            filename:'./index.html',
+            filename:'./index.html', or filename:['./index.html','./home.html','./about.html']
             chunks:['index'],
             transducer:"http://cdn.example.com",
             custom:[{
