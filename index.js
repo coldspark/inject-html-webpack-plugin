@@ -98,7 +98,10 @@ function leadingWhitespace(str) {
 InjectHtmlWebpackPlugin.prototype.apply = function(compiler) {
   let that = this
   let options = that.options
-  let filename = options.filename
+  let fileNames = 
+    Array.isArray(options.filename)
+      ? options.filename
+      : [options.filename]
   let output =
     isString(options.output) || isFunction(options.output)
       ? options.output
@@ -150,8 +153,8 @@ InjectHtmlWebpackPlugin.prototype.apply = function(compiler) {
     }
     if (isString(output) && output) {
       try {
-        fs.copySync(filename, output)
-        filename = output
+        fs.copySync(fileNames, output)
+        fileNames = output
       } catch (e) {
         compilation.errors.push(
           new Error('InjectHtmlWebpackPlugin copy filename to output failed')
@@ -207,9 +210,11 @@ InjectHtmlWebpackPlugin.prototype.apply = function(compiler) {
       return html
     }
     if (isFunction(output)) {
-      output(filename, injector)
+      output(fileNames, injector)
     } else {
-      fs.writeFileSync(filename, injector(filename))
+      fileNames.forEach(fileName => {
+        fs.writeFileSync(fileName, injector(fileName))        
+      })
     }
     that.runing = true
     callback()
